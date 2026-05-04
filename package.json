@@ -1,0 +1,13 @@
+{
+  "name": "hangman",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "engines": { "node": ">=22" },
+  "pnpm": { "onlyBuiltDependencies": ["esbuild"] },
+  "scripts": {
+    "dev": "pnpm --filter @hangman/web dev",
+    "build": "pnpm --filter @hangman/web build",
+    "preview": "pnpm --filter @hangman/web preview",
+    "typecheck": "pnpm --filter @hangman/web exec tsc -b"
+  }
+}
