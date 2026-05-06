@@ -98,7 +98,11 @@ export default function App() {
         </>
       }
     >
-      <div className="relative w-full h-full min-h-[400px]">
+      {/* Drop the unconditional min-h-[400px] — it forced 400px of
+          vertical content into landscape phone heights of 264-358px,
+          clipping the bottom of the start/over screens. The h-full
+          alone fills available space; flex-col below centers content. */}
+      <div className="relative w-full h-full">
         {phase === "playing" ? (
           <Game onScore={handleScore} onGameOver={handleGameOver} />
         ) : (
