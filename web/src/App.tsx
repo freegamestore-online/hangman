@@ -13,7 +13,11 @@ function getBestScore(): number {
 }
 
 export default function App() {
-  const [phase, setPhase] = useState<GamePhase>("menu");
+  // Land straight in the game — no menu friction. tetris/2048/snake
+  // all auto-start; hangman has nothing to configure pre-game so the
+  // start screen was just a tap to skip. "over" still shows a
+  // Play Again screen because resetting state is meaningful UX.
+  const [phase, setPhase] = useState<GamePhase>("playing");
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(getBestScore);
   const scoreRef = useRef(0);
@@ -67,13 +71,13 @@ export default function App() {
           <div className="text-sm" style={{ color: "var(--muted)" }}>
             Best: {bestScore}
           </div>
-          {phase !== "playing" && (
+          {phase === "over" && (
             <button
               onClick={start}
               className="mt-4 px-4 py-2 rounded-xl font-semibold text-sm"
               style={{ background: "var(--accent)", color: "#fff" }}
             >
-              {phase === "menu" ? "Start" : "Play Again"}
+              Play Again
             </button>
           )}
           <div
@@ -98,41 +102,29 @@ export default function App() {
         </>
       }
     >
-      {/* Drop the unconditional min-h-[400px] — it forced 400px of
-          vertical content into landscape phone heights of 264-358px,
-          clipping the bottom of the start/over screens. The h-full
-          alone fills available space; flex-col below centers content. */}
       <div className="relative w-full h-full">
         {phase === "playing" ? (
           <Game onScore={handleScore} onGameOver={handleGameOver} />
         ) : (
+          // Game-over screen — kept because Play Again is meaningful
+          // (reset score + new word). The pre-game menu was removed
+          // so first load drops you straight into a fresh game.
           <div className="flex flex-col items-center justify-center h-full gap-4">
-            <h1
-              className="text-4xl font-bold"
-              style={{ fontFamily: "Fraunces, serif" }}
+            <p
+              className="text-xl font-bold"
+              style={{ color: "var(--error)", fontFamily: "Fraunces, serif" }}
             >
-              Hangman
-            </h1>
-            {phase === "over" && (
-              <p
-                className="text-xl font-bold"
-                style={{ color: "var(--error)", fontFamily: "Fraunces, serif" }}
-              >
-                Game Over! Streak: {score}
-              </p>
-            )}
-            <p style={{ color: "var(--muted)" }}>
-              Guess the word before the hangman is complete.
+              Game Over! Streak: {score}
             </p>
             <button
               onClick={start}
               className="px-6 py-3 rounded-xl font-semibold"
               style={{ background: "var(--accent)", color: "#fff" }}
             >
-              {phase === "menu" ? "Start Game" : "Play Again"}
+              Play Again
             </button>
             <p className="text-xs" style={{ color: "var(--muted)" }}>
-              Press Space or Enter to start
+              Press Space or Enter to play again
             </p>
           </div>
         )}
