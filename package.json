@@ -16,7 +16,5 @@
     "preview": "pnpm --filter @hangman/web preview",
     "typecheck": "pnpm --filter @hangman/web exec tsc -b"
   },
-  "dependencies": {
-    "@freeappstore/quality": "^0.1.0"
-  }
+  "dependencies": {}
 }
