@@ -56,6 +56,22 @@ export default function App() {
             { label: "Streak", value: score, accent: true },
             { label: "Best", value: bestScore },
           ]}
+          rules={
+            <div>
+              <h3 style={{marginBottom:'0.5rem',fontWeight:700}}>Hangman</h3>
+              <p>Guess the hidden word one letter at a time.</p>
+              <h4 style={{marginTop:'0.75rem',fontWeight:600}}>Controls</h4>
+              <ul style={{paddingLeft:'1.2rem',marginTop:'0.25rem'}}>
+                <li>Tap letters on the keyboard</li>
+                <li>Category hint shown above the word</li>
+              </ul>
+              <h4 style={{marginTop:'0.75rem',fontWeight:600}}>Rules</h4>
+              <ul style={{paddingLeft:'1.2rem',marginTop:'0.25rem'}}>
+                <li>6 wrong guesses = game over</li>
+                <li>Streak counts consecutive wins</li>
+              </ul>
+            </div>
+          }
           actions={<GameAuth />}
         />
       }
