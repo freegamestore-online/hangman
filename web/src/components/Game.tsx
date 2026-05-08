@@ -395,8 +395,8 @@ export function Game({ onScore, onGameOver }: GameProps) {
         )}
       </div>
 
-      {/* On-screen keyboard — 4 rows of 7, big touch targets */}
-      <div className="grid grid-cols-7 gap-1.5 w-full max-w-[400px] shrink-0 pb-1">
+      {/* On-screen keyboard — 6 cols on small phones, 7 on wider screens */}
+      <div className="grid grid-cols-6 gap-1 w-full max-w-[400px] shrink-0 pb-1 min-[360px]:grid-cols-7 min-[360px]:gap-1.5">
         {letters.map((letter) => {
           const isGuessed = guessed.has(letter);
           const isCorrect = isGuessed && word.includes(letter);
