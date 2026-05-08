@@ -346,8 +346,6 @@ export function Game({ onScore, onGameOver }: GameProps) {
   const wrongCount = wrongCountRef.current;
   const isWon = [...new Set(word.replace(/ /g, "").split(""))].every((l) => guessed.has(l));
   const isLost = wrongCount >= MAX_WRONG;
-  const streak = streakRef.current;
-
   const displayWord = word
     .split("")
     .map((ch) => {
@@ -360,54 +358,47 @@ export function Game({ onScore, onGameOver }: GameProps) {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
   return (
-    <div className="flex flex-col items-center h-full w-full p-4 gap-3 overflow-auto">
-      {/* Category hint */}
-      <div
-        className="text-sm font-semibold px-3 py-1 rounded-xl"
-        style={{ background: "var(--panel)", color: "var(--accent)" }}
-      >
-        Category: {category}
+    <div className="flex flex-col items-center h-full w-full px-2 py-1 gap-1 overflow-hidden">
+      {/* Category + wrong count */}
+      <div className="flex items-center gap-3 shrink-0">
+        <span
+          className="text-xs font-semibold px-2 py-0.5 rounded-lg"
+          style={{ background: "var(--panel)", color: "var(--accent)" }}
+        >
+          {category}
+        </span>
+        <span className="text-xs" style={{ color: "var(--muted)" }}>
+          {wrongCount}/{MAX_WRONG} wrong
+        </span>
       </div>
 
-      {/* Streak display */}
-      {streak > 0 && (
-        <div className="text-xs font-semibold" style={{ color: "var(--success)" }}>
-          Streak: {streak}
-        </div>
-      )}
-
-      {/* Canvas for hangman drawing */}
-      <div className="w-full max-w-[280px] aspect-square relative">
+      {/* Canvas — fills available space between header and keyboard */}
+      <div className="flex-1 min-h-0 w-full max-w-[280px] relative">
         <canvas ref={canvasRef} className="w-full h-full" />
-      </div>
-
-      {/* Wrong guesses counter */}
-      <div className="text-xs" style={{ color: "var(--muted)" }}>
-        {wrongCount} / {MAX_WRONG} wrong
       </div>
 
       {/* Word display */}
       <div
-        className="text-2xl md:text-3xl font-bold tracking-[0.3em] text-center px-2"
-        style={{ fontFamily: "Fraunces, serif", minHeight: "2.5rem" }}
+        className="text-lg font-bold tracking-[0.25em] text-center px-1 shrink-0"
+        style={{ fontFamily: "Fraunces, serif" }}
       >
         {displayWord}
       </div>
 
       {/* Win / Lose message */}
       {isWon && (
-        <div className="text-sm font-bold" style={{ color: "var(--success)" }}>
+        <div className="text-xs font-bold shrink-0" style={{ color: "var(--success)" }}>
           Correct! Next word...
         </div>
       )}
       {isLost && (
-        <div className="text-sm font-bold" style={{ color: "var(--error)" }}>
+        <div className="text-xs font-bold shrink-0" style={{ color: "var(--error)" }}>
           The word was: {word}
         </div>
       )}
 
-      {/* On-screen keyboard */}
-      <div className="flex flex-wrap justify-center gap-1.5 max-w-[500px] mt-auto pb-2">
+      {/* On-screen keyboard — compact grid, always visible */}
+      <div className="grid grid-cols-9 gap-1 w-full max-w-[400px] shrink-0 pb-1">
         {letters.map((letter) => {
           const isGuessed = guessed.has(letter);
           const isCorrect = isGuessed && word.includes(letter);
@@ -428,16 +419,14 @@ export function Game({ onScore, onGameOver }: GameProps) {
               key={letter}
               onClick={() => handleGuess(letter)}
               disabled={isGuessed || !gameActiveRef.current}
-              className="font-semibold rounded-xl transition-colors"
+              className="font-semibold rounded-lg transition-colors aspect-square"
               style={{
-                minWidth: 44,
-                minHeight: 44,
                 background: bg,
                 color,
                 opacity: isGuessed ? 0.6 : 1,
                 border: "1px solid var(--line)",
                 cursor: isGuessed || !gameActiveRef.current ? "default" : "pointer",
-                fontSize: "1rem",
+                fontSize: "0.75rem",
               }}
             >
               {letter}
