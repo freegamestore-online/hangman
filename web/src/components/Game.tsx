@@ -372,33 +372,31 @@ export function Game({ onScore, onGameOver }: GameProps) {
         </span>
       </div>
 
-      {/* Canvas — fills available space between header and keyboard */}
-      <div className="flex-1 min-h-0 w-full max-w-[280px] relative">
-        <canvas ref={canvasRef} className="w-full h-full" />
+      {/* Canvas + word — flex to fill space above keyboard */}
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-1">
+        <div className="flex-1 min-h-0 w-full max-w-[200px] relative">
+          <canvas ref={canvasRef} className="w-full h-full" />
+        </div>
+        <div
+          className="text-base font-bold tracking-[0.25em] text-center px-1 shrink-0"
+          style={{ fontFamily: "Fraunces, serif" }}
+        >
+          {displayWord}
+        </div>
+        {isWon && (
+          <div className="text-xs font-bold shrink-0" style={{ color: "var(--success)" }}>
+            Correct! Next word...
+          </div>
+        )}
+        {isLost && (
+          <div className="text-xs font-bold shrink-0" style={{ color: "var(--error)" }}>
+            The word was: {word}
+          </div>
+        )}
       </div>
 
-      {/* Word display */}
-      <div
-        className="text-lg font-bold tracking-[0.25em] text-center px-1 shrink-0"
-        style={{ fontFamily: "Fraunces, serif" }}
-      >
-        {displayWord}
-      </div>
-
-      {/* Win / Lose message */}
-      {isWon && (
-        <div className="text-xs font-bold shrink-0" style={{ color: "var(--success)" }}>
-          Correct! Next word...
-        </div>
-      )}
-      {isLost && (
-        <div className="text-xs font-bold shrink-0" style={{ color: "var(--error)" }}>
-          The word was: {word}
-        </div>
-      )}
-
-      {/* On-screen keyboard — compact grid, always visible */}
-      <div className="grid grid-cols-9 gap-1 w-full max-w-[400px] shrink-0 pb-1">
+      {/* On-screen keyboard — 4 rows of 7, big touch targets */}
+      <div className="grid grid-cols-7 gap-1.5 w-full max-w-[400px] shrink-0 pb-1">
         {letters.map((letter) => {
           const isGuessed = guessed.has(letter);
           const isCorrect = isGuessed && word.includes(letter);
@@ -419,14 +417,15 @@ export function Game({ onScore, onGameOver }: GameProps) {
               key={letter}
               onClick={() => handleGuess(letter)}
               disabled={isGuessed || !gameActiveRef.current}
-              className="font-semibold rounded-lg transition-colors aspect-square"
+              className="font-bold rounded-xl transition-colors"
               style={{
+                minHeight: 48,
                 background: bg,
                 color,
                 opacity: isGuessed ? 0.6 : 1,
                 border: "1px solid var(--line)",
                 cursor: isGuessed || !gameActiveRef.current ? "default" : "pointer",
-                fontSize: "0.75rem",
+                fontSize: "1rem",
               }}
             >
               {letter}
