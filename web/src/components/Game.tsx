@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useGameSounds } from "@freegamestore/games";
 import type { Category } from "../types";
 
 const WORDS: Record<Category, string[]> = {
@@ -204,6 +205,7 @@ function drawHangman(ctx: CanvasRenderingContext2D, wrong: number, animProgress:
 }
 
 export function Game({ onScore, onGameOver }: GameProps) {
+  const sounds = useGameSounds();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wordRef = useRef(pickWord());
   const guessedRef = useRef<Set<string>>(new Set());
@@ -270,6 +272,7 @@ export function Game({ onScore, onGameOver }: GameProps) {
 
     if (!word.includes(letter)) {
       wrongCountRef.current++;
+      sounds.playError();
       // Animate the new body part
       animStartRef.current = performance.now();
       cancelAnimationFrame(animFrameRef.current);
@@ -277,6 +280,7 @@ export function Game({ onScore, onGameOver }: GameProps) {
 
       if (wrongCountRef.current >= MAX_WRONG) {
         gameActiveRef.current = false;
+        sounds.playGameOver();
         rerender();
         setTimeout(() => {
           onScore(streakRef.current);
@@ -284,6 +288,8 @@ export function Game({ onScore, onGameOver }: GameProps) {
         }, 1500);
         return;
       }
+    } else {
+      sounds.playScore();
     }
 
     // Check win: all letters in word are guessed
@@ -292,6 +298,7 @@ export function Game({ onScore, onGameOver }: GameProps) {
     if (allGuessed) {
       gameActiveRef.current = false;
       streakRef.current++;
+      sounds.playLevelUp();
       onScore(streakRef.current);
       rerender();
       setTimeout(() => {
