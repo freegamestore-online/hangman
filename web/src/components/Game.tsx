@@ -365,45 +365,48 @@ export function Game({ onScore, onGameOver }: GameProps) {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
   return (
-    <div className="flex flex-col items-center h-full w-full px-2 py-1 gap-1 overflow-hidden">
-      {/* Category + wrong count */}
-      <div className="flex items-center gap-3 shrink-0">
-        <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-lg"
-          style={{ background: "var(--panel)", color: "var(--accent)" }}
-        >
-          {category}
-        </span>
-        <span className="text-xs" style={{ color: "var(--muted)" }}>
-          {wrongCount}/{MAX_WRONG} wrong
-        </span>
+    <div className="flex flex-col items-center h-full w-full px-2 py-1 gap-0.5 overflow-hidden landscape:flex-row landscape:items-stretch">
+      {/* Left column in landscape: canvas + info */}
+      <div className="flex flex-col items-center flex-1 min-h-0 min-w-0 landscape:min-w-0 landscape:flex-1">
+        {/* Category + wrong count */}
+        <div className="flex items-center gap-3 shrink-0">
+          <span
+            className="text-xs font-semibold px-2 py-0.5 rounded-lg"
+            style={{ background: "var(--panel)", color: "var(--accent)" }}
+          >
+            {category}
+          </span>
+          <span className="text-xs" style={{ color: "var(--muted)" }}>
+            {wrongCount}/{MAX_WRONG} wrong
+          </span>
+        </div>
+
+        {/* Canvas + word — flex to fill space above keyboard */}
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-0.5">
+          <div className="flex-1 min-h-0 w-full max-w-[200px] landscape:max-w-[160px] relative">
+            <canvas ref={canvasRef} className="w-full h-full" />
+          </div>
+          <div
+            className="text-sm font-bold tracking-[0.25em] text-center px-1 shrink-0 sm:text-base"
+            style={{ fontFamily: "Fraunces, serif" }}
+          >
+            {displayWord}
+          </div>
+          {isWon && (
+            <div className="text-xs font-bold shrink-0" style={{ color: "var(--success)" }}>
+              Correct! Next word...
+            </div>
+          )}
+          {isLost && (
+            <div className="text-xs font-bold shrink-0" style={{ color: "var(--error)" }}>
+              The word was: {word}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Canvas + word — flex to fill space above keyboard */}
-      <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-1">
-        <div className="flex-1 min-h-0 w-full max-w-[200px] relative">
-          <canvas ref={canvasRef} className="w-full h-full" />
-        </div>
-        <div
-          className="text-base font-bold tracking-[0.25em] text-center px-1 shrink-0"
-          style={{ fontFamily: "Fraunces, serif" }}
-        >
-          {displayWord}
-        </div>
-        {isWon && (
-          <div className="text-xs font-bold shrink-0" style={{ color: "var(--success)" }}>
-            Correct! Next word...
-          </div>
-        )}
-        {isLost && (
-          <div className="text-xs font-bold shrink-0" style={{ color: "var(--error)" }}>
-            The word was: {word}
-          </div>
-        )}
-      </div>
-
-      {/* On-screen keyboard — 6 cols on small phones, 7 on wider screens */}
-      <div className="grid grid-cols-6 gap-1 w-full max-w-[400px] shrink-0 pb-1 min-[360px]:grid-cols-7 min-[360px]:gap-1.5">
+      {/* On-screen keyboard — 7 cols, compact on small viewports; in landscape: right column */}
+      <div className="grid grid-cols-7 gap-[3px] w-full max-w-[400px] shrink-0 pb-1 min-[360px]:gap-1 sm:gap-1.5 landscape:max-w-[260px] landscape:self-center landscape:grid-cols-7 landscape:gap-[2px]">
         {letters.map((letter) => {
           const isGuessed = guessed.has(letter);
           const isCorrect = isGuessed && word.includes(letter);
@@ -424,15 +427,14 @@ export function Game({ onScore, onGameOver }: GameProps) {
               key={letter}
               onClick={() => handleGuess(letter)}
               disabled={isGuessed || !gameActiveRef.current}
-              className="font-bold rounded-xl transition-colors"
+              className="font-bold rounded-lg transition-colors text-[0.8rem] sm:text-base sm:rounded-xl"
               style={{
-                minHeight: 48,
+                minHeight: 44,
                 background: bg,
                 color,
                 opacity: isGuessed ? 0.6 : 1,
                 border: "1px solid var(--line)",
                 cursor: isGuessed || !gameActiveRef.current ? "default" : "pointer",
-                fontSize: "1rem",
               }}
             >
               {letter}
