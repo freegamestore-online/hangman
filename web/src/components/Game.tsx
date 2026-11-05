@@ -1,72 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useGameSounds } from "@freegamestore/games";
-import type { Category } from "../types";
+import { createWordDeck, isSolved } from "../lib/words";
 
-const WORDS: Record<Category, string[]> = {
-  Animals: [
-    "ELEPHANT", "GIRAFFE", "PENGUIN", "DOLPHIN", "KANGAROO", "CHEETAH", "GORILLA", "LEOPARD",
-    "BUFFALO", "PANTHER", "FLAMINGO", "PELICAN", "OCTOPUS", "WALRUS", "HAMSTER", "PARROT",
-    "FALCON", "IGUANA", "JAGUAR", "KOALA", "LOBSTER", "MEERKAT", "NARWHAL", "OSTRICH",
-    "PIRANHA", "QUOKKA", "RACCOON", "SALMON", "TOUCAN", "VULTURE", "WOMBAT", "ZEBRA",
-    "ALPACA", "BADGER", "CAMEL", "DONKEY", "FERRET", "GAZELLE", "HERON", "JACKAL",
-    "LEMUR", "MOOSE", "NEWT", "OTTER", "PANDA", "RABBIT", "SHARK", "TURTLE",
-    "VIPER", "WHALE", "BISON", "COBRA", "CRANE", "EAGLE", "GECKO", "HORSE",
-    "HYENA", "LLAMA", "MACAW", "MOUSE", "ORIOLE", "PYTHON", "RAVEN", "SLOTH",
-    "SNAIL", "SQUID", "STORK", "SWALLOW", "TIGER", "TROUT", "WEASEL", "WOLVERINE",
-    "COYOTE", "DINGO", "ERMINE", "FINCH", "GOOSE", "HAWK", "IMPALA", "KIWI",
-    "LYNX", "MANTA", "OSPREY", "PUMA", "QUAIL", "ROBIN", "SKUNK", "TAPIR",
-    "URCHIN", "VOLE", "WREN", "ANCHOVY", "BEETLE", "CICADA", "DRAGONFLY", "EGRET",
-    "FROG", "GROUSE", "HERMIT", "IBIS", "JELLYFISH",
-  ],
-  Countries: [
-    "ARGENTINA", "AUSTRALIA", "BELGIUM", "BRAZIL", "CAMBODIA", "CANADA", "COLOMBIA", "CROATIA",
-    "DENMARK", "ECUADOR", "EGYPT", "ENGLAND", "ETHIOPIA", "FINLAND", "FRANCE", "GERMANY",
-    "GREECE", "HUNGARY", "ICELAND", "INDIA", "INDONESIA", "IRELAND", "ISRAEL", "ITALY",
-    "JAMAICA", "JAPAN", "JORDAN", "KENYA", "LATVIA", "LEBANON", "MALAYSIA", "MEXICO",
-    "MONGOLIA", "MOROCCO", "NEPAL", "NETHERLANDS", "NIGERIA", "NORWAY", "PAKISTAN", "PANAMA",
-    "PARAGUAY", "PERU", "PHILIPPINES", "POLAND", "PORTUGAL", "ROMANIA", "RUSSIA", "SCOTLAND",
-    "SENEGAL", "SINGAPORE", "SLOVENIA", "SOMALIA", "SPAIN", "SWEDEN", "SWITZERLAND", "TAIWAN",
-    "TANZANIA", "THAILAND", "TUNISIA", "TURKEY", "UGANDA", "UKRAINE", "URUGUAY", "VENEZUELA",
-    "VIETNAM", "WALES", "ZAMBIA", "ZIMBABWE", "AFGHANISTAN", "ALBANIA", "ALGERIA", "ANGOLA",
-    "ARMENIA", "AUSTRIA", "BAHAMAS", "BANGLADESH", "BARBADOS", "BELARUS", "BOLIVIA", "BOSNIA",
-    "BOTSWANA", "BULGARIA", "BURUNDI", "CAMEROON", "CHILE", "CHINA", "CONGO", "COSTA RICA",
-    "CUBA", "CYPRUS", "DOMINICA", "ERITREA", "ESTONIA", "FIJI", "GABON", "GEORGIA",
-    "GHANA", "GUATEMALA", "GUINEA", "GUYANA",
-  ],
-  Foods: [
-    "AVOCADO", "BURRITO", "CASHEW", "DUMPLING", "EGGPLANT", "FALAFEL", "GNOCCHI", "HUMMUS",
-    "JAMBALAYA", "KEBAB", "LASAGNA", "MANGO", "NACHOS", "OMELETTE", "PANCAKE", "QUINOA",
-    "RAVIOLI", "SAUSAGE", "TIRAMISU", "WAFFLE", "BAGUETTE", "BROWNIE", "CALZONE", "CROISSANT",
-    "EDAMAME", "FOCACCIA", "GRANOLA", "HAZELNUT", "JALAPENO", "KETCHUP", "LEMONADE", "MACARON",
-    "NOODLES", "OLIVE", "PRETZEL", "RHUBARB", "SAFFRON", "TEMPURA", "VANILLA", "WALNUT",
-    "ALMOND", "BANANA", "CANNOLI", "DONUT", "ESPRESSO", "FONDUE", "GAZPACHO", "HONEY",
-    "ICECREAM", "JELLY", "KIMCHI", "LINGUINE", "MUSHROOM", "NUTMEG", "OREGANO", "PAPAYA",
-    "RISOTTO", "SPINACH", "TACO", "YOGURT", "ANCHOVY", "BISCUIT", "CARAMEL", "DILL",
-    "FENNEL", "GUAVA", "HALIBUT", "JASMINE", "KUMQUAT", "LOBSTER", "MOZZARELLA", "NECTARINE",
-    "OYSTER", "PUMPKIN", "RADISH", "SARDINE", "TRUFFLE", "VINEGAR", "WASABI", "ZUCCHINI",
-    "APRICOT", "BLUEBERRY", "CINNAMON", "DRAGONFRUIT", "ENDIVE", "GARLIC", "GINGER", "KIWI",
-    "LETTUCE", "MELON", "PAPRIKA", "PEACH", "PINEAPPLE", "SALMON", "SHRIMP", "TOMATO",
-    "TURNIP", "CABBAGE", "CELERY", "COCONUT",
-  ],
-  Sports: [
-    "ARCHERY", "BADMINTON", "BASEBALL", "BASKETBALL", "BIATHLON", "BOBSLED", "BOWLING", "BOXING",
-    "CANOEING", "CRICKET", "CROQUET", "CURLING", "CYCLING", "DIVING", "FENCING", "FOOTBALL",
-    "GOLF", "GYMNASTICS", "HANDBALL", "HOCKEY", "JAVELIN", "JUDO", "KARATE", "KAYAKING",
-    "LACROSSE", "LUGE", "MARATHON", "NETBALL", "PENTATHLON", "POLO", "RACING", "ROWING",
-    "RUGBY", "SAILING", "SHOOTING", "SKATING", "SKIING", "SNOWBOARD", "SOCCER", "SOFTBALL",
-    "SPRINTING", "SQUASH", "SURFING", "SWIMMING", "TENNIS", "TRIATHLON", "VOLLEYBALL", "WATERSKI",
-    "WRESTLING", "BILLIARDS", "CLIMBING", "DARTS", "EQUESTRIAN", "FISHING", "FRISBEE", "HURDLES",
-    "KICKBOXING", "PARKOUR", "POWERLIFTING", "RAFTING", "SKATEBOARD", "SNOOKER", "TAEKWONDO",
-    "TRAPEZE", "WEIGHTLIFTING", "AEROBICS", "DECATHLON", "DODGEBALL", "HEPTATHLON",
-    "HORSEBACK", "ICESTOCK", "JOGGING", "KENDO", "MOTOCROSS", "ORIENTEERING", "PARACHUTING",
-    "PICKLEBALL", "PILATES", "RAPPELLING", "RODEO", "SKELETON", "SLALOM", "STEEPLECHASE",
-    "TOBOGGANING", "TRAMPOLINING", "VAULTING", "WAKEBOARD", "WINDSURF",
-    "WUSHU", "HANDBALL", "LACROSSE", "ARCHERY", "BADMINTON", "BASEBALL", "BASKETBALL",
-    "BIATHLON", "BOWLING", "CANOEING", "CRICKET", "CROQUET", "CURLING",
-  ],
-};
-
-const CATEGORIES: Category[] = ["Animals", "Countries", "Foods", "Sports"];
 const MAX_WRONG = 6;
 
 interface GameProps {
@@ -74,12 +9,8 @@ interface GameProps {
   onGameOver: () => void;
 }
 
-function pickWord(): { word: string; category: Category } {
-  const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)]!;
-  const wordList = WORDS[category];
-  const word = wordList[Math.floor(Math.random() * wordList.length)]!;
-  return { word, category };
-}
+// Shared across rounds and replays so a word is not repeated until every word has been played.
+const nextWord = createWordDeck();
 
 function drawHangman(ctx: CanvasRenderingContext2D, wrong: number, animProgress: number) {
   const dpr = window.devicePixelRatio || 1;
@@ -207,13 +138,15 @@ function drawHangman(ctx: CanvasRenderingContext2D, wrong: number, animProgress:
 export function Game({ onScore, onGameOver }: GameProps) {
   const sounds = useGameSounds();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wordRef = useRef(pickWord());
+  const [firstWord] = useState(nextWord);
+  const wordRef = useRef(firstWord);
   const guessedRef = useRef<Set<string>>(new Set());
   const wrongCountRef = useRef(0);
   const streakRef = useRef(0);
   const gameActiveRef = useRef(true);
   const animFrameRef = useRef(0);
   const animStartRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [, setTick] = useState(0);
 
   const rerender = useCallback(() => {
@@ -253,7 +186,7 @@ export function Game({ onScore, onGameOver }: GameProps) {
   }, []);
 
   const startNewRound = useCallback(() => {
-    wordRef.current = pickWord();
+    wordRef.current = nextWord();
     guessedRef.current = new Set();
     wrongCountRef.current = 0;
     gameActiveRef.current = true;
@@ -282,7 +215,7 @@ export function Game({ onScore, onGameOver }: GameProps) {
         gameActiveRef.current = false;
         sounds.playGameOver();
         rerender();
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
           onScore(streakRef.current);
           onGameOver();
         }, 1500);
@@ -293,17 +226,13 @@ export function Game({ onScore, onGameOver }: GameProps) {
     }
 
     // Check win: all letters in word are guessed
-    const wordLetters = new Set(word.replace(/ /g, "").split(""));
-    const allGuessed = [...wordLetters].every((l) => guessedRef.current.has(l));
-    if (allGuessed) {
+    if (isSolved(word, guessedRef.current)) {
       gameActiveRef.current = false;
       streakRef.current++;
       sounds.playLevelUp();
       onScore(streakRef.current);
       rerender();
-      setTimeout(() => {
-        startNewRound();
-      }, 1200);
+      timeoutRef.current = setTimeout(startNewRound, 1200);
       return;
     }
 
@@ -313,6 +242,7 @@ export function Game({ onScore, onGameOver }: GameProps) {
   // Keyboard input
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       const key = e.key.toUpperCase();
       if (key.length === 1 && key >= "A" && key <= "Z") {
         handleGuess(key);
@@ -342,16 +272,19 @@ export function Game({ onScore, onGameOver }: GameProps) {
     return () => window.removeEventListener("resize", resizeCanvas);
   }, [redraw]);
 
-  // Cleanup animation on unmount
+  // Cleanup animation and pending round timers on unmount
   useEffect(() => {
-    return () => cancelAnimationFrame(animFrameRef.current);
+    return () => {
+      cancelAnimationFrame(animFrameRef.current);
+      clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   const word = wordRef.current.word;
   const category = wordRef.current.category;
   const guessed = guessedRef.current;
   const wrongCount = wrongCountRef.current;
-  const isWon = [...new Set(word.replace(/ /g, "").split(""))].every((l) => guessed.has(l));
+  const isWon = isSolved(word, guessed);
   const isLost = wrongCount >= MAX_WRONG;
   const displayWord = word
     .split("")
